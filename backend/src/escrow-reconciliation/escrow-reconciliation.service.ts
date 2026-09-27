@@ -15,6 +15,7 @@ import {
   ReconciliationRun,
 } from './escrow-reconciliation.types';
 import { InvalidChainStateError } from './chain-escrow.validation';
+import { amountsEqual } from '../common/amount';
 
 const INVALID = Symbol('invalid-chain-state');
 
@@ -115,7 +116,7 @@ export class EscrowReconciliationService {
           ),
         );
       }
-      if (escrow && chainEscrow && chainEscrow.amountXLM !== escrow.amountXLM) {
+      if (escrow && chainEscrow && !amountsEqual(chainEscrow.amountXLM, escrow.amountXLM)) {
         fieldDrifts.push(
           this.recordDrift(
             DriftType.AMOUNT_MISMATCH,

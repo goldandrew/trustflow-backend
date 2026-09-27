@@ -14,6 +14,7 @@ import { MetricsService } from '../monitoring/metrics.service';
 import { UserType, UserStatus } from './user-profile.entity';
 import { CreateUserProfileDto, UpdateUserProfileDto, RateUserDto } from './user-profile.dto';
 import { randomUUID } from 'crypto';
+import { parseAmount, normalizeAmount } from '../common/amount';
 
 export interface UserProfile {
   id: string;
@@ -276,10 +277,11 @@ export class UserProfileService implements OnModuleInit {
    * Update total earned (for freelancers)
    */
   async updateTotalEarned(id: string, amount: string): Promise<UserProfile> {
+    parseAmount(amount);
     const profile = await this.findById(id);
-    const currentEarned = new BigNumber(profile.totalEarned || '0');
-    const additionalAmount = new BigNumber(amount);
-    profile.totalEarned = currentEarned.plus(additionalAmount).toFixed(7);
+    const currentEarned = parseAmount(profile.totalEarned || '0');
+    const additionalAmount = parseAmount(amount);
+    profile.totalEarned = normalizeAmount(currentEarned.plus(additionalAmount).toFixed());
     profile.updatedAt = new Date().toISOString();
     await this.persist(profile);
     return profile;
@@ -289,10 +291,11 @@ export class UserProfileService implements OnModuleInit {
    * Update total spent (for clients)
    */
   async updateTotalSpent(id: string, amount: string): Promise<UserProfile> {
+    parseAmount(amount);
     const profile = await this.findById(id);
-    const currentSpent = new BigNumber(profile.totalSpent || '0');
-    const additionalAmount = new BigNumber(amount);
-    profile.totalSpent = currentSpent.plus(additionalAmount).toFixed(7);
+    const currentSpent = parseAmount(profile.totalSpent || '0');
+    const additionalAmount = parseAmount(amount);
+    profile.totalSpent = normalizeAmount(currentSpent.plus(additionalAmount).toFixed());
     profile.updatedAt = new Date().toISOString();
     await this.persist(profile);
     return profile;

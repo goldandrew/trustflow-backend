@@ -34,7 +34,15 @@ const EnvSchema = z
 
     // Server configuration
     PORT: z.coerce.number().int().positive().default(3001),
-    CORS_ORIGIN: z.string().optional(),
+    CORS_ORIGIN: z.preprocess(
+      (val) => {
+        if (typeof val !== 'string') return undefined;
+        if (!val.trim()) return undefined;
+        const origins = Array.from(new Set(val.split(',').map(s => s.trim()).filter(Boolean)));
+        return origins.length > 0 ? origins : undefined;
+      },
+      z.array(z.string().url().or(z.literal('*'))).optional()
+    ),
     API_URL: z.string().url().optional().default('http://localhost:3001'),
     BODY_LIMIT_MB: z.coerce.number().int().positive().default(15),
     ALLOW_NO_REDIS: optionalBool(),
@@ -72,6 +80,26 @@ const EnvSchema = z
       .nonnegative()
       .optional()
       .describe('Contract deployment ledger to start ingestion from'),
+
+    // Stellar timeout configuration
+    STELLAR_TX_VALIDITY_SECONDS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(60)
+      .describe('Validity window (in seconds) for release transactions handed to the wallet'),
+    STELLAR_RPC_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(10000)
+      .describe('Request timeout (ms) for Horizon/Soroban RPC client operations'),
+    STELLAR_HEALTH_CHECK_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(5000)
+      .describe('Timeout (ms) for Stellar endpoint health checks'),
 
     // Redis Configuration
     REDIS_URL: z
@@ -232,12 +260,9 @@ const EnvSchema = z
     }
 
     if (isProduction) {
-      const corsOrigins = (data.CORS_ORIGIN ?? '')
-        .split(',')
-        .map(origin => origin.trim())
-        .filter(Boolean);
+      const corsOrigins = data.CORS_ORIGIN || [];
 
-      if (!data.CORS_ORIGIN || data.CORS_ORIGIN.trim() === '' || corsOrigins.some(origin => origin === '*' || origin.includes('*'))) {
+      if (corsOrigins.length === 0 || corsOrigins.includes('*')) {
         issue(
           'CORS_ORIGIN',
           'CORS_ORIGIN must be explicitly set to a comma-separated list of allowed origins in production; wildcard is not allowed',

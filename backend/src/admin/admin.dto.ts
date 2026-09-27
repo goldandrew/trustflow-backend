@@ -23,8 +23,12 @@ export class EscrowAnalyticsDto implements EscrowAnalytics {
     example: { pending: 3, active: 12, released: 40, disputed: 2, cancelled: 1 },
   })
   byStatus!: Record<string, number>;
-  @ApiProperty({ description: 'Sum of amountXLM across every escrow, regardless of status' })
-  totalValueXLM!: number;
+  @ApiProperty({
+    type: 'string',
+    description: 'Sum of amountXLM across every escrow, regardless of status, as a decimal string',
+    example: '1234.5678901',
+  })
+  totalValueXLM!: string;
 }
 
 export class GigAnalyticsDto implements GigAnalytics {

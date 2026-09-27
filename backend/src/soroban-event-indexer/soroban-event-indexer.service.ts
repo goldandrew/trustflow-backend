@@ -4,6 +4,7 @@ import { Redis } from 'ioredis';
 import { REDIS_CLIENT } from '../common/redis/redis.module';
 import { getStellarConfig } from '../stellar/stellar.config';
 import { config } from '../config/env.config';
+import { buildSorobanServer } from '../stellar/soroban.helper';
 
 export interface IndexedSorobanEvent {
   eventId: string;
@@ -35,7 +36,7 @@ export class SorobanEventIndexerService implements OnModuleInit, OnModuleDestroy
   constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis | null) {}
 
   onModuleInit() {
-    this.rpcServer = new SorobanRpc.Server(getStellarConfig().sorobanRpcUrl);
+    this.rpcServer = buildSorobanServer(getStellarConfig().sorobanRpcUrl);
   }
 
   onModuleDestroy() {
