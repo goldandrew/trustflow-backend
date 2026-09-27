@@ -125,6 +125,18 @@ const EnvSchema = z
     DISCORD_WEBHOOK_URL: z
       .preprocess(blankToUndefined, z.string().url().optional())
       .describe('Discord webhook for dispute notifications'),
+    DISCORD_NOTIFICATION_MAX_RETRIES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(3)
+      .describe('Max retry attempts for failed Discord dispute notifications (#394). Default 3.'),
+    DISCORD_NOTIFICATION_RETRY_BASE_DELAY_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(1000)
+      .describe('Base delay (ms) for exponential backoff in Discord retry logic. Default 1s.'),
 
     // Rate Limiting Configuration
     RATE_LIMIT_ABUSE_WINDOW_SECONDS: z.coerce.number().int().positive().default(300),
