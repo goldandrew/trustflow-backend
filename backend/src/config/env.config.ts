@@ -159,6 +159,17 @@ const EnvSchema = z
       .positive()
       .default(30000)
       .describe('Global inbound request timeout in milliseconds (408 Request Timeout returned on timeout). Default 30s.'),
+
+    // Gig Expiry Worker Configuration
+    GIG_EXPIRY_SWEEP_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .optional()
+      .describe('Gig expiry sweep interval in milliseconds. 0 or negative disables the sweep.'),
+    GIG_EXPIRY_SWEEP_CONCURRENCY: optionalPositiveInt()
+      .describe('Max concurrent gig expirations per sweep. Default 8.'),
+    GIG_EXPIRY_SWEEP_MAX_GIGS: optionalPositiveInt()
+      .describe('Cap on gigs to expire per sweep; continuing on next tick if more remain. Prevents monopolising a tick. Default unlimited.'),
   })
   .superRefine((data, ctx) => {
     const issue = (path: string, message: string) =>
