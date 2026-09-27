@@ -148,6 +148,19 @@ const EnvSchema = z
     IPFS_WEB3_STORAGE_TOKEN: z.string().optional().describe('Web3.Storage API token'),
     IPFS_INFURA_PROJECT_ID: z.string().optional().describe('Infura IPFS project ID'),
     IPFS_INFURA_PROJECT_SECRET: z.string().optional().describe('Infura IPFS project secret'),
+    IPFS_PROVIDER_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(30000)
+      .describe('Timeout for IPFS provider HTTP requests in milliseconds. Default 30s.'),
+    IPFS_REPIN_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .optional()
+      .describe('Interval between IPFS repin sweeps in milliseconds'),
+    IPFS_REPIN_SWEEP_CONCURRENCY: optionalPositiveInt()
+      .describe('Max concurrent CID reconciliations per IPFS repin sweep. Default 8.'),
 
     // Reputation System Configuration
     REPUTATION_DECAY_HALF_LIFE_MS: z.coerce.number().int().positive().optional(),

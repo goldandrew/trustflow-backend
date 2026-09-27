@@ -79,6 +79,18 @@ export class IpfsPinningService implements OnModuleInit {
           'start with per-instance in-memory storage, which would silently diverge across instances.',
       );
     }
+
+    // Guard against production deployments with unconfigured providers running in simulated mode (#409).
+    // This prevents POST /ipfs/pins from returning 201 with HEALTHY status while nothing is actually pinned.
+    if (process.env.NODE_ENV === 'production') {
+      const simulatedProviders = this.providers.filter(p => !p.isConfigured).map(p => p.name);
+      if (simulatedProviders.length > 0) {
+        throw new Error(
+          `IpfsPinningService: providers running in simulated mode in production: ${simulatedProviders.join(', ')}. ` +
+          'Set the required credentials (IPFS_PINATA_JWT, IPFS_WEB3_STORAGE_TOKEN, IPFS_INFURA_*) before deploying.',
+        );
+      }
+    }
   }
 
   // ─── Queries ──────────────────────────────────────────────────────
