@@ -151,6 +151,14 @@ const EnvSchema = z
 
     // Reputation System Configuration
     REPUTATION_DECAY_HALF_LIFE_MS: z.coerce.number().int().positive().optional(),
+
+    // Inbound Request Timeout Configuration
+    REQUEST_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(30000)
+      .describe('Global inbound request timeout in milliseconds (408 Request Timeout returned on timeout). Default 30s.'),
   })
   .superRefine((data, ctx) => {
     const issue = (path: string, message: string) =>

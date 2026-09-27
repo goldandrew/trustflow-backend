@@ -6,6 +6,7 @@ import { SentryService } from './sentry/sentry.service';
 import { SentryExceptionFilter } from './common/filters/sentry-exception.filter';
 import { SorobanEventIndexerService } from './soroban-event-indexer/soroban-event-indexer.service';
 import { MetricsHttpInterceptor } from './monitoring/metrics-http.interceptor';
+import { RequestTimeoutInterceptor } from './common/http/request-timeout.interceptor';
 import { CorrelationIdStore } from './common/logging/correlation-id.store';
 import { config } from './config/env.config';
 
@@ -69,6 +70,10 @@ export function configureApp(app: INestApplication, options: ConfigureAppOptions
   // Register global exception filter — captures 5xx errors to Sentry, tags with correlationId
   const correlationIdStore = app.get(CorrelationIdStore);
   app.useGlobalFilters(new SentryExceptionFilter(sentryService, correlationIdStore));
+
+  // Register global request timeout interceptor (runs before metrics so timeout errors are recorded)
+  const requestTimeoutInterceptor = app.get(RequestTimeoutInterceptor);
+  app.useGlobalInterceptors(requestTimeoutInterceptor);
 
   // Register global metrics interceptor
   const metricsInterceptor = app.get(MetricsHttpInterceptor);
